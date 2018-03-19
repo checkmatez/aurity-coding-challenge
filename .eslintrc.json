@@ -1,0 +1,25 @@
+{
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaVersion": 7,
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "impliedStrict": true,
+      "jsx": true,
+      "experimentalObjectRestSpread": true
+    }
+  },
+  "env": {
+    "react-native/react-native": true
+  },
+  "extends": ["airbnb", "plugin:react-native/all", "prettier"],
+  "plugins": ["react", "react-native", "import"],
+  "rules": {
+    "global-require": 0,
+    "no-unused-vars": 1,
+    "react/jsx-filename-extension": 0,
+    "react-native/no-color-literals": 1,
+    "react-native/split-platform-components": 0,
+    "react/prefer-stateless-function": 0
+  }
+}
