@@ -1,9 +1,20 @@
 import { ApolloClient } from 'apollo-client'
 import { ApolloLink } from 'apollo-link'
 import { HttpLink } from 'apollo-link-http'
-import { InMemoryCache } from 'apollo-cache-inmemory'
+import {
+  InMemoryCache,
+  IntrospectionFragmentMatcher,
+} from 'apollo-cache-inmemory'
+import introspectionQueryResultData from './fragmentTypes.json'
 
-import { GRAPHQL_ENDPOINT } from '../config/constants'
+import { GRAPHQL_ENDPOINT, GITHUB_TOKEN } from '../config/constants'
+
+// Github API uses interfaces and unions,
+// so we have to introspect schema at build time
+// https://www.apollographql.com/docs/react/recipes/fragment-matching.html
+const fragmentMatcher = new IntrospectionFragmentMatcher({
+  introspectionQueryResultData,
+})
 
 const configureApollo = () => {
   const authLink = new ApolloLink((operation, forward) => {
@@ -11,7 +22,7 @@ const configureApollo = () => {
       ...rest,
       headers: {
         ...headers,
-        // authorization: accessToken,
+        authorization: `Bearer ${GITHUB_TOKEN}`,
       },
     }))
     return forward(operation)
@@ -23,7 +34,7 @@ const configureApollo = () => {
 
   const client = new ApolloClient({
     link: ApolloLink.from([authLink, httpLink]),
-    cache: new InMemoryCache(),
+    cache: new InMemoryCache({ fragmentMatcher }),
   })
 
   return { client }

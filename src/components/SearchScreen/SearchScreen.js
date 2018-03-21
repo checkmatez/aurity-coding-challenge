@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import {
   TouchableWithoutFeedback,
+  TouchableOpacity,
   Keyboard,
   FlatList,
   ActivityIndicator,
@@ -10,32 +11,46 @@ import styled from 'styled-components'
 
 import REPOSITORY_SEARCH_QUERY from '../../queries/repositorySearch'
 
-const Container = styled.ScrollView`
+const Root = styled.View`
   flex: 1;
+  margin-horizontal: 15;
 `
 
-const SearchInput = styled.TextInput.attrs({
-  placeholderTextColor: 'white',
-  selectionColor: 'white',
-  // android only
-  underlineColorAndroid: 'transparent',
-  textBreakStrategy: 'highQuality',
-})`
+const SearchInputContainer = styled.View`
   width: 100%;
-  height: 120;
+  height: 60;
+  margin-vertical: 16;
   padding-vertical: 16;
-  padding-horizontal: 26;
-  /* background-color: 'red'; */
-  font-size: 16;
-  /* color: 'white'; */
+  padding-horizontal: 10;
+  border-width: 2;
+  border-color: blue;
+  border-radius: 10;
+  justify-content: center;
 `
 
-const SearchResultText = styled.Text`
-  /* color: 'blue'; */
+const SearchInput = styled.TextInput`
   font-size: 16;
 `
 
-export class SearchScreen extends Component {
+const SearchResultText = styled.Text.attrs({
+  numberOfLines: 2,
+  elipsizeMode: 'tail',
+})`
+  font-size: 16;
+  padding-horizontal: 10;
+`
+
+const Row = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  height: 100;
+  margin-bottom: 10;
+  background-color: #d9def8;
+  border-radius: 10;
+`
+
+class SearchScreen extends Component {
   state = {
     inputValue: '',
     searchText: null,
@@ -48,62 +63,95 @@ export class SearchScreen extends Component {
   handleSearchSubmit = () =>
     this.setState(prevState => ({ searchText: prevState.inputValue }))
 
-  checkValidation = () => {
-    return true
+  keyExtractor = item => `${item.node.owner.login}/${item.node.name}`
+
+  handleEndReached = ({ data, networkStatus, fetchMore }) => {
+    if (networkStatus >= 7 && data.search.pageInfo.hasNextPage) {
+      fetchMore({
+        variables: {
+          after: data.search.pageInfo.endCursor,
+        },
+        updateQuery: (previousResult, { fetchMoreResult }) => ({
+          ...previousResult,
+          ...fetchMoreResult,
+          search: {
+            ...previousResult.search,
+            ...fetchMoreResult.search,
+            edges: [
+              ...previousResult.search.edges,
+              ...fetchMoreResult.search.edges,
+            ],
+          },
+        }),
+      })
+    }
   }
 
-  keyExtractor = item => item.cursor
-
-  handleEndReached = () => {}
-
-  renderItem = edge => {
-    return <SearchResultText>{edge.textMatches[0].fragment}</SearchResultText>
-  }
+  renderItem = ({ item: edge }) => (
+    <TouchableOpacity
+      onPress={() =>
+        this.props.navigation.navigate('UserDetails', {
+          owner: edge.node.owner,
+        })
+      }
+    >
+      <Row>
+        <SearchResultText>{edge.node.name}</SearchResultText>
+        <SearchResultText>{edge.node.owner.login}</SearchResultText>
+      </Row>
+    </TouchableOpacity>
+  )
 
   render() {
     const { inputValue, searchText } = this.state
     return (
       <TouchableWithoutFeedback onPress={this.handleOutsidePress}>
-        <Container>
-          <SearchInput
-            value={inputValue}
-            placeholder="Enter search"
-            keyboardType="default"
-            returnKeyType="search"
-            maxLength={50}
-            autoFocus
-            blurOnSubmit
-            onSubmitEditing={this.handleSearchSubmit}
-            onChangeText={this.handleTextChange}
-          />
+        <Root>
+          <SearchInputContainer>
+            <SearchInput
+              value={inputValue}
+              placeholder="Enter search"
+              autoCapitalize="none"
+              keyboardType="default"
+              returnKeyType="search"
+              maxLength={50}
+              autoFocus
+              blurOnSubmit
+              onSubmitEditing={this.handleSearchSubmit}
+              onChangeText={this.handleTextChange}
+            />
+          </SearchInputContainer>
           {searchText && (
             <Query
               query={REPOSITORY_SEARCH_QUERY}
-              variables={{ query: searchText, first: 10 }}
+              variables={{
+                query: `${searchText} in:name`,
+                first: 20,
+                after: null,
+              }}
             >
-              {({ data, loading, error }) => {
-                if (loading) {
+              {({ data, networkStatus, error, fetchMore }) => {
+                if (networkStatus === 1) {
                   return <ActivityIndicator size="large" />
                 }
                 if (error) {
                   return <SearchResultText>{error.message}</SearchResultText>
                 }
-                console.log('search text = ', searchText)
-                console.log(data)
                 return (
                   <FlatList
                     data={data.search.edges}
                     renderItem={this.renderItem}
                     keyExtractor={this.keyExtractor}
-                    // refreshControl={refreshControl}
-                    onEndReached={this.handleEndReached}
+                    onEndReached={() =>
+                      this.handleEndReached({ data, networkStatus, fetchMore })
+                    }
                     onEndReachedThreshold={0.9}
                   />
                 )
               }}
             </Query>
           )}
-        </Container>
+        </Root>
       </TouchableWithoutFeedback>
     )
   }

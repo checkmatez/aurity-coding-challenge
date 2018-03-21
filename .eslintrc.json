@@ -20,6 +20,7 @@
     "react/jsx-filename-extension": 0,
     "react-native/no-color-literals": 1,
     "react-native/split-platform-components": 0,
-    "react/prefer-stateless-function": 0
+    "react/prefer-stateless-function": 0,
+    "react/prop-types": 0
   }
 }

@@ -1,7 +1,7 @@
 import { StackNavigator } from 'react-navigation'
 
 import SearchScreen from '../SearchScreen'
-// import DisputesByMatchScreen from '../../Screens/DisputesByMatchScreen'
+import UserDetailsScreen from '../UserDetailsScreen'
 
 const MainNavigator = StackNavigator(
   {
@@ -9,6 +9,12 @@ const MainNavigator = StackNavigator(
       screen: SearchScreen,
       navigationOptions: () => ({
         title: `Search`,
+      }),
+    },
+    UserDetails: {
+      screen: UserDetailsScreen,
+      navigationOptions: ({ navigation }) => ({
+        title: navigation.getParam('owner').login,
       }),
     },
   },
@@ -19,11 +25,6 @@ const MainNavigator = StackNavigator(
     cardStyle: {
       backgroundColor: 'white',
     },
-    navigationOptions: () => ({
-      headerStyle: {
-        backgroundColor: 'grey',
-      },
-    }),
   }
 )
 

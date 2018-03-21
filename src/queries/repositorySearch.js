@@ -1,17 +1,32 @@
 import gql from 'graphql-tag'
 
 const REPOSITORY_SEARCH_QUERY = gql`
-  query search($query: String!, $first: Int) {
-    search(query: $query, first: $first, type: REPOSITORY) {
+  query search($query: String!, $first: Int, $after: String) {
+    search(query: $query, first: $first, after: $after, type: REPOSITORY) {
       edges {
         cursor
         textMatches {
-          fragment
           property
-          highlights {
-            beginIndice
-            endIndice
-            text
+          fragment
+        }
+        node {
+          ... on Repository {
+            id
+            name
+            description
+            owner {
+              id
+              avatarUrl
+              login
+              ... on User {
+                id
+                bio
+              }
+              ... on Organization {
+                id
+                description
+              }
+            }
           }
         }
       }
@@ -20,7 +35,6 @@ const REPOSITORY_SEARCH_QUERY = gql`
         hasNextPage
       }
       repositoryCount
-      userCount
     }
   }
 `

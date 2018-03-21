@@ -1,1 +1,3 @@
-export const GRAPHQL_ENDPOINT = 'https://developer.github.com/v4/'
+export const GRAPHQL_ENDPOINT = 'https://api.github.com/graphql'
+
+export const GITHUB_TOKEN = 'xxx'
