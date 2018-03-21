@@ -1,19 +1,5 @@
 import React, { Component } from 'react'
-import {
-  TouchableWithoutFeedback,
-  TouchableHighlight,
-  Keyboard,
-  FlatList,
-  ActivityIndicator,
-  View,
-  Text,
-  Image,
-} from 'react-native'
-import { Query } from 'react-apollo'
 import styled from 'styled-components'
-import uniqBy from 'lodash/uniqBy'
-
-import REPOSITORY_SEARCH_QUERY from '../../queries/repositorySearch'
 
 const Root = styled.View`
   flex: 1;
@@ -34,6 +20,11 @@ const Avatar = styled.Image.attrs({
   height: 150;
 `
 
+const Text = styled.Text`
+  font-size: 16;
+  padding-horizontal: 10;
+`
+
 class UserDetailsScreen extends Component {
   render() {
     const owner = this.props.navigation.getParam('owner')
@@ -41,7 +32,7 @@ class UserDetailsScreen extends Component {
       <Root>
         <Row>
           <Avatar source={{ uri: owner.avatarUrl }} />
-          <Text>{owner.login}</Text>
+          <Text>{`Login: ${owner.login}`}</Text>
         </Row>
         <Text>{owner.bio ? owner.bio : owner.description}</Text>
       </Root>
